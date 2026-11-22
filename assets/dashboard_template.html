@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>__TITLE__</title>
+<style>
+:root{
+  --bg:#eef1f7; --card:#ffffff; --ink:#17203a; --muted:#6b7488; --line:#e6eaf2;
+  --primary:#2563eb; --green:#16a34a; --amber:#f59e0b; --gray:#c3cad6; --red:#dc2626;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1360px;margin:0 auto;padding:22px 26px 40px}
+
+.hd{position:relative;background:linear-gradient(120deg,#0f2557 0%,#1d4ed8 55%,#2563eb 100%);border-radius:16px;padding:26px 30px;color:#fff;overflow:hidden;box-shadow:0 8px 30px rgba(29,78,216,.25)}
+.hd::after{content:"";position:absolute;right:-60px;top:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%)}
+.hd .tag{display:inline-block;font-size:12px;letter-spacing:.5px;background:rgba(255,255,255,.16);padding:4px 12px;border-radius:999px;margin-bottom:14px}
+.hd h1{font-size:26px;font-weight:700;letter-spacing:.5px;margin-bottom:8px}
+.hd p{font-size:13px;color:rgba(255,255,255,.82);max-width:760px;line-height:1.7}
+.hd .today{position:absolute;right:30px;top:50%;transform:translateY(-50%);text-align:right;z-index:2}
+.hd .today .lbl{font-size:12px;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.hd .today .lbl .dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 0 rgba(74,222,128,.7);animation:pulse 2s infinite}
+.hd .today .val{font-size:30px;font-weight:800;margin-top:4px;letter-spacing:1px}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.6)}70%{box-shadow:0 0 0 9px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin:20px 0}
+.kpi{background:var(--card);border-radius:14px;padding:18px 18px 16px;border:1px solid var(--line);box-shadow:0 2px 10px rgba(23,32,58,.04);position:relative;overflow:hidden}
+.kpi .k-lbl{font-size:13px;color:var(--muted);margin-bottom:8px}
+.kpi .k-val{font-size:30px;font-weight:800;line-height:1}
+.kpi .k-val small{font-size:14px;font-weight:600;color:var(--muted);margin-left:2px}
+.kpi .k-sub{font-size:12px;color:var(--muted);margin-top:8px}
+.kpi.rate .k-val{color:var(--primary)}
+.kpi.done .k-val{color:var(--green)}
+.kpi.prog .k-val{color:var(--amber)}
+.kpi.notstart .k-val{color:var(--muted)}
+.kpi.overdue{border-color:#fecaca}
+.kpi.overdue .k-val{color:var(--red)}
+.kpi.overdue .k-sub{color:var(--red)}
+
+.card{background:var(--card);border-radius:16px;border:1px solid var(--line);box-shadow:0 2px 12px rgba(23,32,58,.05);padding:20px 22px;margin-bottom:20px}
+.card .c-hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+.card .c-title{font-size:17px;font-weight:700;display:flex;align-items:center;gap:9px}
+.card .c-title::before{content:"";width:4px;height:16px;background:var(--primary);border-radius:2px}
+.card .c-desc{font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+.chart{width:100%}
+
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin:6px 0 2px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.legend i.g{background:var(--green)} .legend i.a{background:var(--amber)}
+.legend i.gr{background:var(--gray)} .legend i.r{background:var(--red)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:980px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(3,1fr)}}
+
+.ftr{font-size:12px;color:var(--muted);text-align:center;padding:6px 0 2px;line-height:1.7}
+.ftr b{color:#4a5468}
+</style>
+<script>
+__ECHARTS__
+</script>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd">
+    <span class="tag">__TAG__</span>
+    <h1>__TITLE__</h1>
+    <p>__GOAL__</p>
+    <div class="today">
+      <div class="lbl"><span class="dot"></span>数据截止当日</div>
+      <div class="val" id="todayVal"></div>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k-lbl">工作包总数</div><div class="k-val" id="kTotal"></div><div class="k-sub">__CATEGORY__ · <span id="kCatN"></span> 类工作包</div></div>
+    <div class="kpi done"><div class="k-lbl">已完成</div><div class="k-val" id="kDone"></div><div class="k-sub">推进状态 = 已完成</div></div>
+    <div class="kpi prog"><div class="k-lbl">进行中</div><div class="k-val" id="kProg"></div><div class="k-sub">推进状态 = 进行中</div></div>
+    <div class="kpi notstart"><div class="k-lbl">未开始</div><div class="k-val" id="kNotstart"></div><div class="k-sub">推进状态 = 未开始</div></div>
+    <div class="kpi overdue"><div class="k-lbl">已逾期</div><div class="k-val" id="kOverdue"></div><div class="k-sub" id="kOverdueSub"></div></div>
+    <div class="kpi rate"><div class="k-lbl">完成率</div><div class="k-val" id="kRate"></div><div class="k-sub">已完成 / 总数</div></div>
+  </div>
+
+  <div class="card">
+    <div class="c-hd"><div class="c-title">里程碑甘特图</div><span style="font-size:12px;color:var(--muted)">仅里程碑工作包 · 按计划完成日升序 · 红色虚线为今日</span></div>
+    <div class="c-desc">仅列出「里程碑」标记为<b>是</b>的工作包，按计划完成日期<b>升序</b>排列，并以<b>工作包名称</b>标示。条右端为计划完成日，颜色表示推进状态；红色描边为<b>已逾期</b>。</div>
+    <div class="legend">
+      <span><i class="g"></i>已完成</span>
+      <span><i class="a"></i>进行中</span>
+      <span><i class="gr"></i>未开始</span>
+      <span><i class="r"></i>已逾期</span>
+      <span style="margin-left:6px;color:var(--red)">━ 今日（截止当日）</span>
+    </div>
+    <div id="gantt" class="chart" style="height:__GANTT_H__px"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="c-hd"><div class="c-title">工作包类别分布 · 饼图</div></div>
+      <div class="c-desc">按「工作包类别」统计工作包总数，扇区标示每个类别的工作包数量与占比。</div>
+      <div id="pie" class="chart" style="height:400px"></div>
+    </div>
+    <div class="card">
+      <div class="c-hd"><div class="c-title">工作包类别完成情况 · 直方图</div></div>
+      <div class="c-desc">每个类别一个方柱，柱高为该类别工作包总数；柱内以绿色（已完成）与灰色（未完成）分色并标注百分比，柱上方标注该类别工作包总数。</div>
+      <div class="legend">
+        <span><i class="g"></i>已完成</span>
+        <span><i class="gr"></i>未完成（进行中 + 未开始）</span>
+      </div>
+      <div id="bar" class="chart" style="height:420px"></div>
+    </div>
+  </div>
+
+  <div class="ftr">
+    数据来源：<b>__SOURCE__</b>（项目类别 = __CATEGORY__，共 <b>__TOTAL__</b> 个工作包，其中里程碑 <b>__MS__</b> 项）<br>
+    推进状态口径：已完成 / 进行中 / 未开始；「已逾期」= 计划完成日早于截止当日且未完成。数据截止：<b>__TODAY__</b>。
+  </div>
+</div>
+
+<script>
+var DATA = __DATA__;
+var STATUS_COLOR = {'已完成':'#16a34a','进行中':'#f59e0b','未开始':'#c3cad6'};
+var BASE_START = '__BASE_START__';
+var today = DATA.today;
+
+document.getElementById('todayVal').textContent = today;
+document.getElementById('kTotal').textContent = DATA.total;
+document.getElementById('kCatN').textContent = DATA.wpList.length;
+document.getElementById('kDone').textContent = DATA.done;
+document.getElementById('kProg').textContent = DATA.progress;
+document.getElementById('kNotstart').textContent = DATA.notstart;
+document.getElementById('kOverdue').textContent = DATA.overdue;
+document.getElementById('kRate').innerHTML = DATA.rate + '<small>%</small>';
+var od = DATA.milestones.filter(function(t){return t.overdue;}).map(function(t){return t.name;});
+document.getElementById('kOverdueSub').textContent = od.length ? ('待处理：' + od.join('、')) : '无逾期事项';
+
+// 甘特图
+var gantt = echarts.init(document.getElementById('gantt'));
+var ms = DATA.milestones;
+var yData = ms.map(function(t){return t.name || t.id;});
+var gData = ms.map(function(t,i){
+  return {value:[i, BASE_START, t.plan, STATUS_COLOR[t.status], t.overdue?1:0], t:t};
+});
+gantt.setOption({
+  animationDuration: 500,
+  grid:{left:140,right:30,top:14,bottom:42},
+  tooltip:{
+    trigger:'item', backgroundColor:'rgba(23,32,58,.94)', borderWidth:0, textStyle:{color:'#fff',fontSize:12},
+    formatter:function(p){
+      var t = p.data.t; if(!t) return '';
+      var st = t.status + (t.overdue ? '（已逾期）' : '');
+      return '<b>'+(t.name||t.id)+'</b> · '+t.wp+'（'+t.id+'）<br>'+
+        '交付：'+(t.deliver||'—')+'<br>计划完成：'+t.plan+'　状态：'+st+'<br>'+
+        '主责人：'+(t.owner||'—')+'　风险：'+(t.risk||'—');
+    }
+  },
+  xAxis:{
+    type:'time', min:'__X_MIN__', max:'__X_MAX__',
+    axisLine:{lineStyle:{color:'#cdd5e3'}},
+    axisLabel:{color:'#6b7488',fontSize:11,formatter:function(v){return echarts.format.formatTime('MM-dd', v);}},
+    splitLine:{show:true,lineStyle:{color:'#f0f2f8'}}
+  },
+  yAxis:{
+    type:'category', data:yData, inverse:true,
+    axisLine:{lineStyle:{color:'#cdd5e3'}}, axisTick:{show:false},
+    axisLabel:{color:'#333d55',fontSize:12,fontWeight:600}, splitLine:{show:false}
+  },
+  series:[{
+    type:'custom', encode:{x:[1,2], y:0}, data:gData,
+    renderItem:function(params, api){
+      var cat = api.value(0);
+      var s = api.coord([api.value(1), cat]);
+      var e = api.coord([api.value(2), cat]);
+      var h = api.size([0,1])[1] * 0.58;
+      var color = api.value(3);
+      var overdue = api.value(4) === 1;
+      var w = Math.max(e[0]-s[0], 3);
+      return {type:'rect',
+        shape:{x:s[0], y:s[1]-h/2, width:w, height:h, r:3},
+        style:{fill:color, stroke: overdue ? '#dc2626' : 'transparent', lineWidth: overdue ? 1.6 : 0}};
+    },
+    markLine:{
+      silent:true, symbol:'none',
+      lineStyle:{color:'#dc2626',width:1.6,type:'dashed'},
+      label:{formatter:'今日 '+today.slice(5), position:'insideEndTop', color:'#dc2626', fontSize:11, fontWeight:700, padding:[2,4,2,4]},
+      data:[{xAxis: today}]
+    }
+  }]
+});
+
+// 饼图
+var pie = echarts.init(document.getElementById('pie'));
+var wp = DATA.wpList;
+var pieColors = ['#2563eb','#3b82f6','#60a5fa','#22c55e','#14b8a6','#f59e0b','#f97316','#8b5cf6','#ec4899','#06b6d4','#64748b'];
+pie.setOption({
+  color:pieColors,
+  tooltip:{trigger:'item',formatter:'{b}：{c} 项（{d}%）',backgroundColor:'rgba(23,32,58,.94)',borderWidth:0,textStyle:{color:'#fff'}},
+  legend:{bottom:0,type:'scroll',textStyle:{fontSize:12,color:'#4a5468'},itemWidth:11,itemHeight:11},
+  series:[{
+    type:'pie', radius:['44%','70%'], center:['50%','44%'],
+    avoidLabelOverlap:true, itemStyle:{borderColor:'#fff',borderWidth:2},
+    label:{formatter:'{b}\n{c} 项',fontSize:11,color:'#333d55',lineHeight:16},
+    emphasis:{label:{fontWeight:700}},
+    data:wp.map(function(w){return {name:w.name, value:w.total};})
+  }]
+});
+
+// 直方图
+var bar = echarts.init(document.getElementById('bar'));
+var doneData = wp.map(function(w){return w.done;});
+var undoneData = wp.map(function(w){return w.undone;});
+var totalData = wp.map(function(w){return w.total;});
+function pct(v,t){ return t>0 ? Math.round(v/t*100)+'%' : '0%'; }
+bar.setOption({
+  tooltip:{
+    trigger:'axis', axisPointer:{type:'shadow'},
+    backgroundColor:'rgba(23,32,58,.94)',borderWidth:0,textStyle:{color:'#fff'},
+    formatter:function(ps){
+      var i = ps[0].dataIndex; var w = wp[i];
+      return '<b>'+w.name+'</b><br>总数：'+w.total+' 项<br>'+
+        '已完成：'+w.done+' 项（'+pct(w.done,w.total)+'）<br>'+
+        '未完成：'+w.undone+' 项（'+pct(w.undone,w.total)+'）';
+    }
+  },
+  grid:{left:40,right:18,top:40,bottom:76},
+  xAxis:{type:'category',data:wp.map(function(w){return w.name;}),axisLabel:{rotate:34,fontSize:11,color:'#4a5468',interval:0},axisLine:{lineStyle:{color:'#cdd5e3'}}},
+  yAxis:{type:'value',name:'工作包数',nameTextStyle:{color:'#6b7488'},minInterval:1,axisLabel:{color:'#6b7488'},splitLine:{lineStyle:{color:'#f0f2f8'}}},
+  series:[
+    {name:'已完成',type:'bar',stack:'t',barWidth:'58%',data:doneData,itemStyle:{color:'#16a34a'},
+     label:{show:true,position:'inside',color:'#fff',fontWeight:700,fontSize:11,formatter:function(p){return pct(p.value,totalData[p.dataIndex]);}}},
+    {name:'未完成',type:'bar',stack:'t',data:undoneData,itemStyle:{color:'#c3cad6',borderRadius:[5,5,0,0]},
+     label:{show:true,position:'inside',color:'#5b6478',fontWeight:700,fontSize:11,formatter:function(p){return pct(p.value,totalData[p.dataIndex]);}},
+     markPoint:{
+       symbol:'circle', symbolSize:0,
+       label:{show:true, position:'top', distance:8, color:'#17203a', fontWeight:800, fontSize:13, formatter:function(p){return totalData[p.dataIndex] + ' 项';}},
+       data: totalData.map(function(v,i){return {coord:[i, v], value:v};})
+     }}
+  ]
+});
+
+window.addEventListener('resize', function(){gantt.resize();pie.resize();bar.resize();});
+</script>
+</body>
+</html>
